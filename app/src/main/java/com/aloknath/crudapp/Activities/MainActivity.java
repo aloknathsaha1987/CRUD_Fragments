@@ -2,13 +2,21 @@ package com.aloknath.crudapp.Activities;
 
 import android.app.Fragment;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 import com.aloknath.crudapp.Fragments.CategoryFragment;
 import com.aloknath.crudapp.HttpManager.HttpManager;
 import com.aloknath.crudapp.Objects.ItemObject;
@@ -21,21 +29,49 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-
-public class MainActivity extends FragmentActivity implements CategoryFragment.onChildEvent{
+public class MainActivity extends ActionBarActivity implements CategoryFragment.onChildEvent{
 
     private ProgressDialog progressDialog;
     private List<ItemObject> itemObjects;
     public static Map<String, List<ItemObject>> categoryMap = new HashMap<>();
     private HashSet<String> categoryNames = new HashSet<>();
     public static int ACTIVITY_RESULT_CODE = 1001;
+    public static int ADD_ITEM_CODE = 1002;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        progressDialog = new ProgressDialog(MainActivity.this);
-        refreshDisplay();
+        if (isOnline()) {
+            progressDialog = new ProgressDialog(MainActivity.this);
+            toolbar = (Toolbar) findViewById(R.id.include);
+            setSupportActionBar(toolbar);
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#8C000000")));
+            getSupportActionBar().setTitle("CRUD Application");
+            refreshDisplay();
+
+            SwipeRefreshLayout mSwipeView = (SwipeRefreshLayout)findViewById(R.id.swipe_view);
+
+            mSwipeView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+                @Override public void onRefresh() {
+                    refreshDisplay();
+                }
+            });
+
+        }else{
+            Toast.makeText(this, "Network isn't available", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    protected boolean isOnline() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        if (netInfo != null && netInfo.isConnectedOrConnecting()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private void refreshDisplay() {
@@ -59,19 +95,99 @@ public class MainActivity extends FragmentActivity implements CategoryFragment.o
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Bundle b;
         if (requestCode == ACTIVITY_RESULT_CODE && resultCode == RESULT_OK) {
 
-            Bundle b = data.getExtras();
+            b = data.getExtras();
             String category = b.getString("Category");
             String itemName = b.getString("Name");
             int id = b.getInt("id");
+            String action = b.getString("action");
             Log.i("The Updated Category and ItemName: ", category + ":" + itemName);
             // Call the PutDataAsyncTask
-            PutDataAsyncTask putDataAsyncTask = new PutDataAsyncTask(category, itemName,id );
-            putDataAsyncTask.execute();
+            if(action.equals("update")) {
+                PutDataAsyncTask putDataAsyncTask = new PutDataAsyncTask(category, itemName, id);
+                putDataAsyncTask.execute();
+            }else{
+                DeleteDataAsyncTask putDataAsyncTask = new DeleteDataAsyncTask(id);
+                putDataAsyncTask.execute();
+            }
+        }else if(requestCode == ADD_ITEM_CODE && resultCode == RESULT_OK){
+
+            b = data.getExtras();
+            String category = b.getString("Category");
+            String itemName = b.getString("Name");
+            PostDataAsyncTask postDataAsyncTask = new PostDataAsyncTask(category, itemName);
+            postDataAsyncTask.execute();
         }
 
     }
+
+    private class DeleteDataAsyncTask extends AsyncTask<Void,Void, Void>{
+
+       private final int id;
+
+        public DeleteDataAsyncTask(int id){
+            this.id = id;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog.setMessage("Fetching Data and Creating Objects");
+            progressDialog.setIndeterminate(true);
+            progressDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            HttpManager.deleteData(id);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            progressDialog.hide();
+            refreshDisplay();
+        }
+
+    }
+
+    private class PostDataAsyncTask extends AsyncTask<Void,Void, Void>{
+
+        private final String category;
+        private final String itemName;
+
+
+        public PostDataAsyncTask(String category, String itemName){
+            this.category = category;
+            this.itemName = itemName;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            progressDialog.setMessage("Fetching Data and Creating Objects");
+            progressDialog.setIndeterminate(true);
+            progressDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            HttpManager.postData(category, itemName);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            progressDialog.hide();
+            refreshDisplay();
+        }
+
+    }
+
 
     private class PutDataAsyncTask extends AsyncTask<Void,Void, Void>{
 
@@ -223,6 +339,7 @@ public class MainActivity extends FragmentActivity implements CategoryFragment.o
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds itemObjects to the action bar if it is present.
+        menu.clear();
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
@@ -235,7 +352,9 @@ public class MainActivity extends FragmentActivity implements CategoryFragment.o
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.add_item) {
+            Intent intent = new Intent(this, AddItemActivity.class);
+            startActivityForResult(intent, ADD_ITEM_CODE);
             return true;
         }
 

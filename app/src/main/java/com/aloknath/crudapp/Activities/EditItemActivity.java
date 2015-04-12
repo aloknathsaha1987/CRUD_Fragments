@@ -7,7 +7,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import com.aloknath.crudapp.R;
 
 /**
@@ -19,6 +18,7 @@ public class EditItemActivity extends Activity {
     private EditText itemName;
     private Button cancel;
     private Button update;
+    private Button delete;
     private int id;
 
     @Override
@@ -38,6 +38,7 @@ public class EditItemActivity extends Activity {
 
         cancel = (Button)findViewById(R.id.cancel);
         update = (Button)findViewById(R.id.update);
+        delete = (Button)findViewById(R.id.delete);
 
         cancel.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -55,7 +56,27 @@ public class EditItemActivity extends Activity {
                     Bundle bundle = new Bundle();
                     bundle.putString("Category", category.getText().toString());
                     bundle.putString("Name", itemName.getText().toString());
-                    bundle.putInt("id",id);
+                    bundle.putInt("id", id);
+                    bundle.putString("action", "update");
+                    Intent intent = new Intent();
+                    intent.putExtras(bundle);
+                    setResult(RESULT_OK, intent);
+                    finish();
+                }
+            }
+        });
+
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(category.getText().toString().isEmpty() ||  itemName.getText().toString().isEmpty()){
+                    Toast.makeText(EditItemActivity.this, "Please Enter Category and ItemName", Toast.LENGTH_SHORT).show();
+                }else {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("Category", category.getText().toString());
+                    bundle.putString("Name", itemName.getText().toString());
+                    bundle.putInt("id", id);
+                    bundle.putString("action", "delete");
                     Intent intent = new Intent();
                     intent.putExtras(bundle);
                     setResult(RESULT_OK, intent);

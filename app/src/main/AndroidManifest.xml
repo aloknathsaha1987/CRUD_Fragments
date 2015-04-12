@@ -20,6 +20,7 @@
             </intent-filter>
         </activity>
        <activity android:name=".Activities.EditItemActivity" android:screenOrientation="portrait"/>
+        <activity android:name=".Activities.AddItemActivity" android:screenOrientation="portrait"/>
     </application>
 
 </manifest>

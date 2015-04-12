@@ -2,7 +2,6 @@ package com.aloknath.crudapp.Parser;
 
 import com.aloknath.crudapp.Objects.ItemObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
