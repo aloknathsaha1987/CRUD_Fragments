@@ -38,6 +38,7 @@ public class MainActivity extends ActionBarActivity implements CategoryFragment.
     public static int ACTIVITY_RESULT_CODE = 1001;
     public static int ADD_ITEM_CODE = 1002;
     private Toolbar toolbar;
+    private SwipeRefreshLayout mSwipeView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +52,7 @@ public class MainActivity extends ActionBarActivity implements CategoryFragment.
             getSupportActionBar().setTitle("CRUD Application");
             refreshDisplay();
 
-            SwipeRefreshLayout mSwipeView = (SwipeRefreshLayout)findViewById(R.id.swipe_view);
+            mSwipeView = (SwipeRefreshLayout)findViewById(R.id.swipe_view);
 
             mSwipeView.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
                 @Override public void onRefresh() {
@@ -326,8 +327,8 @@ public class MainActivity extends ActionBarActivity implements CategoryFragment.
                 }
 
             }
-
-         }
+            mSwipeView.setRefreshing(false);
+        }
     }
 
     @Override
