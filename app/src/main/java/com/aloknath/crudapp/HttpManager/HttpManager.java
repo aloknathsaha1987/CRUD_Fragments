@@ -39,7 +39,7 @@ public class HttpManager {
             HttpPost httpPost = new HttpPost("https://czshopper.herokuapp.com/items.json");
             httpPost.addHeader("Accept", "application/json");
             httpPost.addHeader("Content-type", "application/json");
-            httpPost.addHeader("X-CZ-Authorization", "2exdtXq4QRpoXZhtbwx7");
+            httpPost.addHeader("X-CZ-Authorization", "w12pzoyCmJEwdVxFpewy");
             httpPost.setEntity(stringEntity);
             HttpResponse httpResponse = httpClient.execute(httpPost);
 
@@ -83,7 +83,7 @@ public class HttpManager {
 
         httpClient = new DefaultHttpClient();
         HttpDelete httpDelete = new HttpDelete("https://czshopper.herokuapp.com/items/"+String.valueOf(id)+".json");
-        httpDelete.addHeader("X-CZ-Authorization", "2exdtXq4QRpoXZhtbwx7");
+        httpDelete.addHeader("X-CZ-Authorization", "w12pzoyCmJEwdVxFpewy");
         try {
             HttpResponse httpResponse = httpClient.execute(httpDelete);
 
@@ -119,7 +119,7 @@ public class HttpManager {
             HttpPut httpPut = new HttpPut("https://czshopper.herokuapp.com/items/"+String.valueOf(id)+".json");
             httpPut.addHeader("Accept", "application/json");
             httpPut.addHeader("Content-type", "application/json");
-            httpPut.addHeader("X-CZ-Authorization", "2exdtXq4QRpoXZhtbwx7");
+            httpPut.addHeader("X-CZ-Authorization", "w12pzoyCmJEwdVxFpewy");
             httpPut.setEntity(stringEntity);
             HttpResponse httpResponse = httpClient.execute(httpPut);
 
@@ -164,7 +164,7 @@ public class HttpManager {
 
         HttpGet httpGet = new HttpGet(urlPassed);
         httpGet.setHeader("Accept", "application/json");
-        httpGet.setHeader("X-CZ-Authorization", "2exdtXq4QRpoXZhtbwx7");
+        httpGet.setHeader("X-CZ-Authorization", "w12pzoyCmJEwdVxFpewy");
 
         HttpResponse httpResponse;
 
